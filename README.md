@@ -5,7 +5,7 @@ Using the Spiking Self Attention mechanism first introduced in [Spikformer](http
 ## Visuals
 ![plot](SMHA-Linear.png)
 
-![plot](Full Model Architecture - LN layers.pdf)
+![plot](Full Model Architecture - LN layers.png)
 
 ## Training 
 To enable a generalized training environment, the utils file provides a number of methods to prepare arbitrary datasets, but this has not been tested extensively. Generally, one should instantiate a Trainer (trainer.py) and supply it with the corresponding word/charDataset as supplied by utils. For word Embedding, the datasets make some assumptions to improve performance, such as stripping and replacing symbols.
