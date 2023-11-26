@@ -1,0 +1,7 @@
+NSD config with vocab size 5947,
+        max length 128, 
+        number of blocks 25, 
+        number of heads 8,
+        embedding dimension 160,
+        learned embedding set to False,
+        and normalization of type layer.
