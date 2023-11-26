@@ -38,27 +38,27 @@ class SpikingPredictor:
         
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.SSconfig = model.SDconfig(30, 256, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=50, heads=5, blocks=12, timesteps=4, device=device, normalization='PowerNorm', spike_mode="concatenate", track_frequency=True)
-        self.SSdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='checkpoints/Thesis/Increased_Dataset_Size/StrictSpikes-10B30_DS900000_10 09 2023_12 30 57', config=self.SSconfig, dim_hid=16)
+        self.SSdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='Pre-trained/StrictSpikes-10B30_DS900000_10 09 2023_12 30 57', config=self.SSconfig, dim_hid=16)
         #self.model = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='checkpoints/PeaceAndWar/checkpoint_epoch-150B64_DS90068_07 08 2023_20 08 51', config=config, dim_hid=16)
 
         #self.master.bind('<Enter>', self.predict)
         self.NSconfig = NonSpikingDecoderModel.NSDconfig(30, 256, embed_dim=80, heads=5, blocks=12, device=device)
-        self.NSdecoder = utils.load_model_from_checkpoint(NonSpikingDecoderModel.NonSpikingDecoderModel, path_to_checkpoint='checkpoints/Thesis/Increased_Dataset_Size/NonSpikingDecoder_12Blocks-10B40_DS900000_09 09 2023_22 29 48', config=self.NSconfig, dim_hid=16)
+        self.NSdecoder = utils.load_model_from_checkpoint(NonSpikingDecoderModel.NonSpikingDecoderModel, path_to_checkpoint='Pre-trained/NonSpikingDecoder_12Blocks-10B40_DS900000_09 09 2023_22 29 48', config=self.NSconfig, dim_hid=16)
         
         self.SDconfig = model.SDconfig(30, 256, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=50, heads=1, blocks=12, timesteps=4, device=device, spike_mode='accumulate', learning_MSLIF=True, float_embedding=True, track_frequency=True)
-        self.Sdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='checkpoints/PeaceAndWar/checkpoint_epoch-10B35_DS900000_12 09 2023_20 45 17', config=self.SDconfig, dim_hid=16)
+        self.Sdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='Pre-trained/checkpoint_epoch-10B35_DS900000_12 09 2023_20 45 17', config=self.SDconfig, dim_hid=16)
         
         self.PSconfig = PartiallySpikingDecoderModel.PSDconfig(30, 256, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=50, heads=5, blocks=12, timesteps=4, device=device, spike_degree=2, track_frequency=True)
-        self.PSdecoder = utils.load_model_from_checkpoint(PartiallySpikingDecoderModel.PartiallySpikingDecoderModel, path_to_checkpoint='checkpoints/Thesis/Increased_Dataset_Size/PartiallySpiking-Decoder-10B42_DS900000_04 09 2023_05 12 02', config=self.PSconfig, dim_hid=16)
+        self.PSdecoder = utils.load_model_from_checkpoint(PartiallySpikingDecoderModel.PartiallySpikingDecoderModel, path_to_checkpoint='Pre-trained/PartiallySpiking-Decoder-10B42_DS900000_04 09 2023_05 12 02', config=self.PSconfig, dim_hid=16)
         
         self.WSDconfig = model.SDconfig(30, 128, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=130, heads=8, blocks=25, timesteps=4, device=device, spike_mode='accumulate', learning_MSLIF=True, float_embedding=True, dictionary=self.reader.createDictionary(path='literature/Leo Tolstoy - War and Peace.txt', prune_level=6), track_frequency=True)
-        self.WSDdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='checkpoints/PeaceAndWar/checkpoint_epoch-9B20_DS521263_22 11 2023_20 27 36', config=self.WSDconfig, dim_hid=16)
+        self.WSDdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='Pre-trained/checkpoint_epoch-9B20_DS521263_22 11 2023_20 27 36', config=self.WSDconfig, dim_hid=16)
         
         self.WNSconfig = NonSpikingDecoderModel.NSDconfig(30, 128, embed_dim=160, heads=8, blocks=25, device=device, dictionary=self.reader.createDictionary(path='literature/Leo Tolstoy - War and Peace.txt', prune_level=6), track_frequency=True)
-        self.WNSdecoder = utils.load_model_from_checkpoint(NonSpikingDecoderModel.NonSpikingDecoderModel, path_to_checkpoint='checkpoints/PeaceAndWar/checkpoint_epoch-3B20_DS521263_22 11 2023_22 28 17', config=self.WNSconfig, dim_hid=16)
+        self.WNSdecoder = utils.load_model_from_checkpoint(NonSpikingDecoderModel.NonSpikingDecoderModel, path_to_checkpoint='Pre-trained/checkpoint_epoch-3B20_DS521263_22 11 2023_22 28 17', config=self.WNSconfig, dim_hid=16)
         
         self.WPSconfig = PartiallySpikingDecoderModel.PSDconfig(30, 128, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=130, heads=8, blocks=25, timesteps=4, device=device, spike_degree=2, dictionary=self.reader.createDictionary(path='literature/Leo Tolstoy - War and Peace.txt', prune_level=6), track_frequency=True)
-        self.WPSdecoder = utils.load_model_from_checkpoint(PartiallySpikingDecoderModel.PartiallySpikingDecoderModel, path_to_checkpoint='checkpoints/PeaceAndWar/checkpoint_epoch-10B20_DS521263_24 11 2023_22 24 40', config=self.WPSconfig, dim_hid=16)
+        self.WPSdecoder = utils.load_model_from_checkpoint(PartiallySpikingDecoderModel.PartiallySpikingDecoderModel, path_to_checkpoint='Pre-trained/checkpoint_epoch-10B20_DS521263_24 11 2023_22 24 40', config=self.WPSconfig, dim_hid=16)
         
     def show_image(self, imagefile, second : bool = False):
         # Load the image
