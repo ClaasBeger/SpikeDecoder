@@ -11,6 +11,27 @@ To enable a generalized training environment, the utils file provides a number o
 ## Usage
 In order to create a customized version of either the SpikeDecoder, partially spiking decoder, or non spiking decoder model, you can use the following code:
 
+```
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+config = model.SDconfig(30, 256, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=50, heads=5, blocks=12, timesteps=4, device=device)
+decoder = model.SpikingDecoderModel(config, dim_hid=16)
+train_dataset = wordDataset('literature/leo tolstoy - war and peace.txt', 'train', inputLength=256, fullLength=100000, seed=7070)
+    test_dataset = wordDataset('literature/leo tolstoy - war and peace.txt', 'test', inputLength=256,  fullLength=100000, seed=7070)
+trainer = Trainer(config, decoder, lr=0.001, train_dataset=train_dataset, test_dataset=test_dataset, batch_size=32, checkPointRate=3, epochs=10, save_model=True, num_workers=8)
+trainer.train()
+```
+or alternatively, if you want to use a word embedding, you need to pass a dictionary parameter
+
+```
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+reader = Reader()
+config = model.SDconfig(30, 128, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=90, heads=5, blocks=20, timesteps=4, device=device, dictionary=reader.createDictionary("literature/leo tolstoy - war and peace.txt", prune_level=6))
+decoder = model.SpikingDecoderModel(config, dim_hid=16)
+train_dataset = wordDataset('literature/leo tolstoy - war and peace.txt', 'train', inputLength=128, fullLength=0, seed=7070, reader=reader)
+    test_dataset = wordDataset('literature/leo tolstoy - war and peace.txt', 'test', inputLength=256,  fullLength=0, seed=7070, reader=reader)
+trainer = Trainer(config, decoder, lr=0.001, train_dataset=train_dataset, test_dataset=test_dataset, batch_size=32, checkPointRate=3, epochs=10, save_model=True, num_workers=8)
+trainer.train()
+```
 
 In order to enable the GridSearch, subclass the NeuralNetClassifier get_loss method, with the following content:
 
