@@ -8,7 +8,7 @@ Using the Spiking Self Attention mechanism first introduced in [Spikformer](http
 ## Training 
 To enable a generalized training environment, the utils file provides a number of methods to prepare arbitrary datasets, but this has not been tested extensively. Generally, one should instantiate a Trainer (trainer.py) and supply it with the corresponding word/charDataset as supplied by utils. For word Embedding, the datasets make some assumptions to improve performance, such as stripping and replacing symbols.
 
-## Usage
+## Training
 In order to create a customized version of either the SpikeDecoder, partially spiking decoder, or non spiking decoder model, you can use the following code:
 
 ```
@@ -33,8 +33,13 @@ trainer = Trainer(config, decoder, lr=0.001, train_dataset=train_dataset, test_d
 trainer.train()
 ```
 
-This will launch a corresponding training process. Of course, there is a multitude of other parameters which you can specify, which you can further investigate in the model signature documentation. The training process may also take longer than what you are used to in ANN training, so the hyperparameters might need some tailoring.
+This will launch a corresponding training process. Of course, there is a multitude of other flexible parameters, which you can further investigate in the model signature documentation. The training process may also take longer than what you are used to in ANN training so the hyperparameters might need some tailoring.
+You can also pass custom dataset locations in the Dataset creation, which should be processed and cleaned automatically. 
 
+## Usage
+In addition to custom training, we provide a small graphical user interface for intuitive comparison of the different model parameters and energy consumption.
+
+![plot](GUI_screenshot.png)
 
 ## Support
 Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
