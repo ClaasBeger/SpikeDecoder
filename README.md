@@ -1,7 +1,6 @@
-# SNNTransformerDecoder
+# SpikeDecoder: Realizing GPT-style Natural Language Processing with Spiking Neural Networks
 
-## Name
-A spiking variant of the decoder only transformer structure. 
+Using the Spiking Self Attention mechanism first introduced in [Spikformer](https://github.com/ZK-Zhou/spikformer), we present a fully-spiking variant of the GPT decoder-only architecture. The model can be applied to language generation on character, as well as word embedding input.
 
 ## Description
 The Spiking Decoder Block enables the model to compute self-attention values based on the computed output.
