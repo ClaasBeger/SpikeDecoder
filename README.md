@@ -2,49 +2,20 @@
 
 Using the Spiking Self Attention mechanism first introduced in [Spikformer](https://github.com/ZK-Zhou/spikformer), we present a fully-spiking variant of the GPT decoder-only architecture. The model can be applied to language generation on character, as well as word embedding input.
 
-## Description
-The Spiking Decoder Block enables the model to compute self-attention values based on the computed output.
-
 ## Visuals
 ![plot](SMHA-Linear.png)
 
-![plot](TensorBoard-1_cut.png)
+![plot](Full Model Architecture - LN layers.pdf)
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+## Training 
+To enable a generalized training environment, the utils file provides a number of methods to prepare arbitrary datasets, but this has not been tested extensively. Generally, one should instantiate a Trainer (trainer.py) and supply it with the corresponding word/charDataset as supplied by utils. For word Embedding, the datasets make some assumptions to improve performance, such as stripping and replacing symbols.
+
+## Usage
+In order to create a customized version of either the SpikeDecoder, partially spiking decoder, or non spiking decoder model, you can use the following code:
+
 
 In order to enable the GridSearch, subclass the NeuralNetClassifier get_loss method, with the following content:
 
-
-
-if isinstance(self.criterion_, torch.nn.NLLLoss): <br />
-&nbsp;&nbsp;eps = torch.finfo(y_pred[0].dtype).eps <br />
-&nbsp;&nbsp;y_pred = torch.log(y_pred[0] + eps) <br />
-        targets = y_true[...,-1,:,:]* <br />
-        return super().get_loss(y_pred[0], targets, *args, **kwargs)<br />
-*only if applied to the spiking variant
-
-and 
-   return self.infer(Xi)[0]
-in net.evaluation_step
-
-and y_proba = torch.from_numpy(y_proba) 
-in NeuralNet.predict_proba()
-
-and     
-X = self.predict_proba(X).argmax(dim=-1)
-X = torch.reshape(X, (X.shape[0], -1))
-return X
-in NeuralNetClassifier.predict
-
-and 
-
-comment out 
-#x = to_tensor(x, device=self.device)
-in NeuralNetClassifier.infer
-for search on the NonSpiking Variant
-
-## Usage
 Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
 
 ## Support
