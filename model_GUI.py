@@ -39,7 +39,7 @@ class SpikingPredictor:
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.SSconfig = model.SDconfig(30, 256, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=50, heads=5, blocks=12, timesteps=4, device=device, normalization='PowerNorm', spike_mode="concatenate", track_frequency=True)
         self.SSdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='Pre-trained/StrictSpikes-10B30_DS900000_10 09 2023_12 30 57', config=self.SSconfig, dim_hid=16)
-        #self.model = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='checkpoints/PeaceAndWar/checkpoint_epoch-150B64_DS90068_07 08 2023_20 08 51', config=config, dim_hid=16)
+        #self.model = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='Pre-trained/PeaceAndWar/checkpoint_epoch-150B64_DS90068_07 08 2023_20 08 51', config=config, dim_hid=16)
 
         #self.master.bind('<Enter>', self.predict)
         self.NSconfig = NonSpikingDecoderModel.NSDconfig(30, 256, embed_dim=80, heads=5, blocks=12, device=device)
@@ -59,6 +59,9 @@ class SpikingPredictor:
         
         self.WPSconfig = PartiallySpikingDecoderModel.PSDconfig(30, 128, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=130, heads=8, blocks=25, timesteps=4, device=device, spike_degree=2, dictionary=self.reader.createDictionary(path='literature/Leo Tolstoy - War and Peace.txt', prune_level=6), track_frequency=True)
         self.WPSdecoder = utils.load_model_from_checkpoint(PartiallySpikingDecoderModel.PartiallySpikingDecoderModel, path_to_checkpoint='Pre-trained/checkpoint_epoch-10B20_DS521263_24 11 2023_22 24 40', config=self.WPSconfig, dim_hid=16)
+        
+        self.WSSconfig = model.SDconfig(30, 128, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=130, heads=8, blocks=25, timesteps=4, device=device, spike_mode='concatenate', learning_MSLIF=False, float_embedding=True, normalization="PowerNorm", dictionary=self.reader.createDictionary(path='literature/Leo Tolstoy - War and Peace.txt', prune_level=6), track_frequency=True)
+        self.WSSdecoder = utils.load_model_from_checkpoint(model.SpikingDecoderModel, path_to_checkpoint='Pre-trained/checkpoint_epoch-10B20_DS521263_02 12 2023_02 22 47', config=self.WSSconfig, dim_hid=16)
         
     def show_image(self, imagefile, second : bool = False):
         # Load the image
@@ -143,7 +146,9 @@ class SpikingPredictor:
                 if(self.model_mode == 'Non-Spiking'):
                     self.model = self.WNSdecoder
                 elif(self.model_mode == "Performance Spikes"):
-                    self.model = self.WSDdecoder
+                    self.model = self.WPSdecoder
+                elif(self.model_mode == "Strict Spikes"):
+                    self.model = self.WSSdecoder
                 else:
                     self.model = self.WSDdecoder
             elif(self.model_mode == 'Strict Spikes'):
@@ -194,7 +199,12 @@ class SpikingPredictor:
         self.show_image('prediction_visualization/'+dt_string+'_energy.png', second=True)
 
     def createEnergyPlot(self, path):
-        energyValues = {'Strict Spikes' : self.computeConsumption('Strict Spikes', self.SSconfig.num_blocks), 
+        if(self.switch_to_words):
+            energyValues = {'Strict Spikes' : self.computeConsumption('Word Strict Spikes', self.WSSconfig.num_blocks), 
+                        'Performance Spikes' : self.computeConsumption('Word Performance Spikes', self.WPSconfig.num_blocks),
+                        'Non-Spiking' : self.computeConsumption('Word Non-Spiking', self.WNSconfig.num_blocks)}
+        else:
+            energyValues = {'Strict Spikes' : self.computeConsumption('Strict Spikes', self.SSconfig.num_blocks), 
                         'Performance Spikes' : self.computeConsumption('Performance Spikes', self.PSconfig.num_blocks),
                         'Non-Spiking' : self.computeConsumption('Non-Spiking', self.NSconfig.num_blocks)}
         spike_type = list(energyValues.keys())
@@ -253,17 +263,17 @@ class SpikingPredictor:
             consumption = self.SSdecoder.config.timesteps*(blocks*(3*SMHA_in + SSA + SMHA_out + MLP_in + MLP_out)*0.9)
             consumption = (consumption+Head*0.9)/1000000
         elif(mode=='Word Strict Spikes'):
-            E = self.WSDdecoder.config.embed_dim
-            S = self.WSDdecoder.config.max_len
+            E = self.WSSdecoder.config.embed_dim
+            S = self.WSSdecoder.config.max_len
             dim_hid = 16
-            if(len(self.WSDdecoder.config.query_nnz) != 0):
-                Query_nnz = sum(self.WSDdecoder.config.query_nnz)/len(self.WSDdecoder.config.query_nnz)
-                Att_nnz = sum(self.WSDdecoder.config.att_nnz)/len(self.WSDdecoder.config.att_nnz)
-                SMHA_in_nnz = sum(self.WSDdecoder.config.smha_in_nnz)/len(self.WSDdecoder.config.smha_in_nnz)
-                SMHA_out_nnz = sum(self.WSDdecoder.config.smha_out_nnz)/len(self.WSDdecoder.config.smha_out_nnz)
-                MLP_in_nnz = sum(self.WSDdecoder.config.mlp_in_nnz)/len(self.WSDdecoder.config.mlp_in_nnz)
-                MLP_out_nnz = sum(self.WSDdecoder.config.mlp_out_nnz)/len(self.WSDdecoder.config.mlp_out_nnz)
-                Head_nnz = sum(self.WSDdecoder.config.head_nnz)/len(self.WSDdecoder.config.head_nnz)
+            if(len(self.WSSdecoder.config.query_nnz) != 0):
+                Query_nnz = sum(self.WSSdecoder.config.query_nnz)/len(self.WSSdecoder.config.query_nnz)
+                Att_nnz = sum(self.WSSdecoder.config.att_nnz)/len(self.WSSdecoder.config.att_nnz)
+                SMHA_in_nnz = sum(self.WSSdecoder.config.smha_in_nnz)/len(self.WSSdecoder.config.smha_in_nnz)
+                SMHA_out_nnz = sum(self.WSSdecoder.config.smha_out_nnz)/len(self.WSSdecoder.config.smha_out_nnz)
+                MLP_in_nnz = sum(self.WSSdecoder.config.mlp_in_nnz)/len(self.WSSdecoder.config.mlp_in_nnz)
+                MLP_out_nnz = sum(self.WSSdecoder.config.mlp_out_nnz)/len(self.WSSdecoder.config.mlp_out_nnz)
+                Head_nnz = sum(self.WSSdecoder.config.head_nnz)/len(self.WSSdecoder.config.head_nnz)
             elif(len(self.PSdecoder.config.query_nnz) != 0):
                 Query_nnz = sum(self.PSdecoder.config.query_nnz)/len(self.PSdecoder.config.query_nnz)
                 Att_nnz = sum(self.PSdecoder.config.att_nnz)/len(self.PSdecoder.config.att_nnz)
@@ -285,8 +295,8 @@ class SpikingPredictor:
             SMHA_out = 2*(SMHA_out_nnz)*E+S*E
             MLP_in = 2*(MLP_in_nnz)*dim_hid*E+S*E*dim_hid
             MLP_out = 2*(MLP_out_nnz)*E + E*S
-            Head = 2*(Head_nnz)*self.WSDdecoder.config.vocab_size +self.WSDdecoder.config.vocab_size*S
-            consumption = self.WSDdecoder.config.timesteps*(blocks*(3*SMHA_in + SSA + SMHA_out + MLP_in + MLP_out)*0.9)
+            Head = 2*(Head_nnz)*self.WSSdecoder.config.vocab_size +self.WSSdecoder.config.vocab_size*S
+            consumption = self.WSSdecoder.config.timesteps*(blocks*(3*SMHA_in + SSA + SMHA_out + MLP_in + MLP_out)*0.9)
             consumption = (consumption+Head*0.9)/1000000
         elif(mode=='Non-Spiking'):
             E = self.NSdecoder.config.embed_dim
@@ -332,15 +342,16 @@ class SpikingPredictor:
             E = self.WPSdecoder.config.embed_dim
             S = self.WPSdecoder.config.max_len
             if(len(self.WPSdecoder.config.query_nnz) != 0):
+                print("True values used")
                 Query_nnz = sum(self.WPSdecoder.config.query_nnz)/len(self.WPSdecoder.config.query_nnz)
                 Att_nnz = sum(self.WPSdecoder.config.att_nnz)/len(self.WPSdecoder.config.att_nnz)
                 SMHA_in_nnz = sum(self.WPSdecoder.config.smha_in_nnz)/len(self.WPSdecoder.config.smha_in_nnz)
                 SMHA_out_nnz = sum(self.WPSdecoder.config.smha_out_nnz)/len(self.WPSdecoder.config.smha_out_nnz)
-            elif(len(self.SSdecoder.config.query_nnz) != 0):
-                Query_nnz = sum(self.SSdecoder.config.query_nnz)/len(self.SSdecoder.config.query_nnz)
-                Att_nnz = sum(self.SSdecoder.config.att_nnz)/len(self.SSdecoder.config.att_nnz)
-                SMHA_in_nnz = sum(self.SSdecoder.config.smha_in_nnz)/len(self.SSdecoder.config.smha_in_nnz)
-                SMHA_out_nnz = sum(self.SSdecoder.config.smha_out_nnz)/len(self.SSdecoder.config.smha_out_nnz)
+            elif(len(self.WSSdecoder.config.query_nnz) != 0):
+                Query_nnz = sum(self.WSSdecoder.config.query_nnz)/len(self.WSSdecoder.config.query_nnz)
+                Att_nnz = sum(self.WSSdecoder.config.att_nnz)/len(self.WSSdecoder.config.att_nnz)
+                SMHA_in_nnz = sum(self.WSSdecoder.config.smha_in_nnz)/len(self.WSSdecoder.config.smha_in_nnz)
+                SMHA_out_nnz = sum(self.WSSdecoder.config.smha_out_nnz)/len(self.WSSdecoder.config.smha_out_nnz)
             else:
                 Query_nnz = S*E*0.3
                 Att_nnz = S*E*0.16
@@ -351,8 +362,8 @@ class SpikingPredictor:
             SMHA_in = 2*(SMHA_in_nnz)*E+S*E
             SMHA_out = 2*(SMHA_out_nnz)*E+S*E
             dim_hid = 16
-            consumption = blocks*((SMHA_in+SSA+SMHA_out)*0.9*self.PSdecoder.config.timesteps+2*((2*E-1)*S*(E*dim_hid)+E*S*dim_hid)*4.6)
-            head = (E-1)*S*self.PSdecoder.config.vocab_size + S*self.PSdecoder.config.vocab_size
+            consumption = blocks*((SMHA_in+SSA+SMHA_out)*0.9*self.WPSdecoder.config.timesteps+2*((2*E-1)*S*(E*dim_hid)+E*S*dim_hid)*4.6)
+            head = (E-1)*S*self.WPSdecoder.config.vocab_size + S*self.WPSdecoder.config.vocab_size
             consumption = (consumption+head*0.9)/1000000
         else:
             E = self.PSdecoder.config.embed_dim
