@@ -16,6 +16,7 @@ import seaborn as sns
 from matplotlib import pyplot as plt
 from numpy import argmax
 import math
+import re
 import model
 import NonSpikingDecoderModel
 from PowerNorm import MaskPowerNorm
@@ -357,11 +358,11 @@ class PartiallySpikingDecoderModel(nn.Module):
 
         """
         if(raw):
-            if(type(x) == np.str_ or type(x) == str):
+            if(type(x) == np.str_ or type(x) == str or (not (self.config.dictionary == None) and type(x[0]) == str)):
                 x = [x]
             x = self.embedder.forward(x, fullSequence=False)
             if targets is not None:
-                if(type(targets) == np.str_ or type(targets) == str):
+                if(type(targets) == np.str_ or type(targets) == str or(not (self.config.dictionary == None) and type(x[0]) == str)):
                     targets = [targets]
                 targets = self.embedder.forward(targets, target=True, fullSequence=False)
             if(self.config.SMHA_only):
@@ -431,6 +432,19 @@ class PartiallySpikingDecoderModel(nn.Module):
         reducedOutput = False
         recordedPreds = None
         counter = -1
+        
+        if(not self.config.dictionary == None):
+            text = x.lower()
+                #for word in re.split(r'(\s+)', line):
+            text = text.replace('!', '.')
+            text = text.replace('?', '.')
+            text = text.replace(';', '')
+            text = re.sub('([^a-zA-Z. \']+)', ' ', text)
+            text = re.sub(r'(\d+\.\d+|\b[A-Z](?:\.[A-Z])*\b\.?)|([.,;:!?)])\s*', lambda x: x.group(1) or f'{x.group(2)} ', text)
+            text = text.replace('. . .', '...')
+            text = text.replace('.', ' .')
+            text = text.replace("''", "'")
+            x = re.sub(' +', ' ', text).split()
 
         for iteration in range(iterations):
             while(not flag): 
@@ -451,10 +465,13 @@ class PartiallySpikingDecoderModel(nn.Module):
                         recordedPreds = idx_next
                 idx_next = torch.argmax(idx_next, dim=-1).flatten()
                 
-                nextChar = self.embedder.int_to_char[idx_next.item()]
+                nextChar = self.embedder.int_to_tok[idx_next.item()]
             
                 # append sampled index to the running sequence
-                x = x + nextChar
+                if(not self.config.dictionary == None):
+                    x = x + [nextChar]
+                else:
+                    x = x + nextChar
                 output.append(nextChar)
                 if(len(x) > self.config.max_len):
                     if(reducedOutput):
@@ -468,7 +485,10 @@ class PartiallySpikingDecoderModel(nn.Module):
                     break
             output = []
             flag = False
-            fullOutput+=x
+            if(self.config.dictionary == None):
+                fullOutput+="".join(x)
+            else:
+                fullOutput+=" ".join(x)
 
         if(not paths==None):
             self.embedder.showPrediction(recordedPreds[:len(recordedPreds)//2], path=paths[0])
