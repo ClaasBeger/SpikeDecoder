@@ -45,7 +45,8 @@ You can also pass custom dataset locations in the Dataset creation, which should
 ## Usage
 In addition to custom training, we provide a small graphical user interface for an intuitive comparison of the different model parameters and energy consumption.
 
-![plot](GUI_screenshot.png)
+![plot](GUI_screenshot1.png)
+![plot](GUI_screenshot2.png)
 
 To launch it, simply execute the model_GUI.py file. Please note that text generation can take quite a while, depending on the model type. After the generation is done, you can display the estimated energy consumption by clicking on the corresponding button, which uses the observed spiking frequency of your previous input prompt. Additionally, you may switch between char and word embedding via a switch on the top right. Please note that the word embedding models have only been trained on peace and war, so their dictionary is limited and may include some odd entries rather than common normal words. 
 
