@@ -12,6 +12,9 @@ To enable a generalized training environment, the utils file provides a number o
 In order to create a customized version of either the SpikeDecoder, partially spiking decoder, or non spiking decoder model, you can use the following code:
 
 ```
+import model
+from utils import wordDataset
+from trainer import Trainer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 config = model.SDconfig(30, 256, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=50, heads=5, blocks=12, timesteps=4, device=device)
 decoder = model.SpikingDecoderModel(config, dim_hid=16)
@@ -23,6 +26,9 @@ trainer.train()
 or alternatively, if you want to use a word embedding, you need to pass a dictionary parameter
 
 ```
+import model
+from utils import wordDataset, Reader
+from trainer import Trainer
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 reader = Reader()
 config = model.SDconfig(30, 128, encodingType='learned', position_encoding_strategy='static', tok_embed_dim=90, heads=5, blocks=20, timesteps=4, device=device, dictionary=reader.createDictionary("literature/leo tolstoy - war and peace.txt", prune_level=6))
