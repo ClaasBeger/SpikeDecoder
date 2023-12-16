@@ -39,8 +39,8 @@ trainer = Trainer(config, decoder, lr=0.001, train_dataset=train_dataset, test_d
 trainer.train()
 ```
 
-This will launch a corresponding training process. Of course, there is a multitude of other flexible parameters, which you can further investigate in the model signature documentation. The training process may also take longer than what you are used to in ANN training so the hyperparameters might need some tailoring.
-You can also pass custom dataset locations in the Dataset creation, which should be processed and cleaned automatically. If you wish to use the GridSearch implementation in this repository, some further adjustments in the skorch code maybe needed depending on your installed version.
+This will launch a corresponding training process. Of course, there is a multitude of other flexible parameters, which can be further investigated in the model signature documentation. The training process may also take longer than in common ANN training so the hyperparameters might need some tailoring.
+You can also pass custom dataset locations in the Dataset creation, which should be processed and cleaned automatically. If you wish to use the GridSearch implementation in this repository, some further adjustments in the skorch code may be needed depending on your installed version.
 
 ## Usage
 In addition to custom training, we provide a small graphical user interface for an intuitive comparison of the different model parameters and energy consumption.
