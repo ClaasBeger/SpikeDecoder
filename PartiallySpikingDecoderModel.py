@@ -399,7 +399,86 @@ class PartiallySpikingDecoderModel(nn.Module):
         
         loss = F.cross_entropy(x, targets)
 
-        return loss            
+        return loss
+
+    @torch.no_grad()
+    def generatePartialsWrapper(self, x: str, maxiter: int, prePreds : torch.Tensor, iterations: int = 1, create_visuals_up_to : int = 0,
+                 paths : list = None):
+        """
+
+        Parameters
+        ----------
+        x : str
+            
+        iterations: int, optional
+            
+        create_visuals_up_to: int, optional
+            
+        paths : list, optional
+        
+        maxiter: int
+            
+
+        Returns
+        -------
+        The next generated token.
+        """
+        inputStr = x
+        embedder = NonSpikingInputEmbeddingBlock(self.config)
+        output = []
+        fullOutput = ''
+        reducedOutput = False
+        recordedPreds = prePreds
+        counter = -1
+        
+        if(not self.config.dictionary == None):
+            text = x.lower()
+                #for word in re.split(r'(\s+)', line):
+            text = text.replace('!', '.')
+            text = text.replace('?', '.')
+            text = text.replace(';', '')
+            text = re.sub('([^a-zA-Z. \']+)', ' ', text)
+            text = re.sub(r'(\d+\.\d+|\b[A-Z](?:\.[A-Z])*\b\.?)|([.,;:!?)])\s*', lambda x: x.group(1) or f'{x.group(2)} ', text)
+            text = text.replace('. . .', '...')
+            text = text.replace('.', ' .')
+            text = text.replace("''", "'")
+            x = re.sub(' +', ' ', text).split()
+        
+        if(not iterations==maxiter):
+                # get the predictions
+                preds, attention, loss = self.forward(x)
+                
+                if(len(x)<self.config.max_len):
+                    idx_next = preds[:, len(x)-1, :]
+                    reducedOutput = True
+                else:
+                    # focus on last timestep prediction for further computation
+                    idx_next = preds[:, -1, :] 
+                if(iterations<create_visuals_up_to):
+                     if(not recordedPreds == None):
+                         recordedPreds = torch.cat((recordedPreds, idx_next))
+                     else:
+                         recordedPreds = idx_next
+                
+                idx_next = torch.argmax(idx_next, dim=-1).flatten()
+                
+                nexttok = embedder.int_to_tok[idx_next.item()]
+                
+                # append sampled index to the running sequence
+                if(not self.config.dictionary == None):
+                    x = x + [nexttok]
+                else:
+                    x = x + nexttok
+            
+                # append sampled index to the running sequence
+                if(self.config.dictionary == None):
+                    fullOutput+="".join(x)
+                else:
+                    fullOutput+=" ".join(x)
+        elif(not paths==None):
+            self.embedder.showPrediction(recordedPreds[:len(recordedPreds)//2], path=paths[0])
+            self.embedder.showPrediction(recordedPreds[len(recordedPreds)//2:], path=paths[1], indexOffset=len(recordedPreds)//2)
+        return fullOutput, recordedPreds          
 
     @torch.no_grad()
     def generate(self, x: str, iterations: int = 1, create_visuals_up_to : int = 0,
