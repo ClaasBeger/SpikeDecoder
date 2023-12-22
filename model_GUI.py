@@ -160,12 +160,36 @@ class SpikingPredictor:
             elif(self.model_mode == 'SpikeDecoder'):
                 self.model = self.Sdecoder
     
-            # getting every content fronm the first scrolledtext
-            self.text = self.reader.clean(self.from_text.get(1.0, ttk.END))
-            # translating the language
-            self.prediction = self.model.generate(self.text, paths=['prediction_visualization/'+dt_string+'.png',
-                                                                    'prediction_visualization/'+dt_string+'_2.png'],
-                                                  create_visuals_up_to=32)
+            length = 0
+            
+            if(self.toggle_btn['text'] == "Switch to Words Input"):
+                length = len(self.text)
+            else:
+                length = len(self.text.split())
+            
+            curText = self.text
+            
+            curProbs = None
+            
+            self.to_text.delete(1.0, ttk.END)
+            self.to_text.insert(ttk.END, curText)
+            
+            for iteration in range(self.model.config.max_len - length):
+                curText, curProbs = self.model.generatePartialsWrapper(curText, 
+                                                                       self.model.config.max_len - length - 1, curProbs,
+                                                                       iterations = iteration, paths=['prediction_visualization/'+dt_string+'.png',
+                                                                        'prediction_visualization/'+dt_string+'_2.png'],
+                                                                       create_visuals_up_to=32)
+                if(not curText == ''):
+                    if(self.toggle_btn['text'] == "Switch to Words Input"):
+                        self.to_text.insert(ttk.END, curText[-1])
+                    else:
+                        if(not curText.split()[-1] == "."):
+                            self.to_text.insert(ttk.END, " "+curText.split()[-1])
+                        else:
+                            self.to_text.insert(ttk.END, curText.split()[-1])
+                    self.to_text.see("end")
+                self.to_text.update()
             
             self.show_image('prediction_visualization/'+dt_string+'.png')
             self.show_image('prediction_visualization/'+dt_string+'_2.png', second=True)
