@@ -3,7 +3,7 @@
 Using the Spiking Self Attention mechanism first introduced in [Spikformer](https://github.com/ZK-Zhou/spikformer), we present a fully-spiking variant of the GPT decoder-only architecture. The model can be applied to language generation on character, as well as word embedding input.
 
 ## Visuals
-![plot](Architecture.png)
+![plot](Images/Architecture.png)
 
 ## Training 
 To enable a generalized training environment, the utils file provides a number of methods to prepare arbitrary datasets, but this has not been tested extensively. Generally, one should instantiate a Trainer (trainer.py) and supply it with the corresponding word/charDataset as supplied by utils. For word Embedding, the datasets make some assumptions to improve performance, such as stripping and replacing symbols.
@@ -45,8 +45,8 @@ You can also pass custom dataset locations in the Dataset creation, which should
 ## Usage
 In addition to custom training, we provide a small graphical user interface for an intuitive comparison of the different model parameters and energy consumption.
 
-![plot](GUI_screenshot1.png)
-![plot](GUI_screenshot2.png)
+![plot](Images/GUI_screenshot1.png)
+![plot](Images/GUI_screenshot2.png)
 
 To launch it, simply execute the model_GUI.py file. Please note that text generation can take quite a while, depending on the model type. After the generation is done, you can display the estimated energy consumption by clicking on the corresponding button, which uses the observed spiking frequency of your previous input prompt. Additionally, you may switch between char and word embedding via a switch on the top right. Please note that the word embedding models have only been trained on peace and war, so their dictionary is limited and may include some odd entries rather than common normal words. 
 
