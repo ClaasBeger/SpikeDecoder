@@ -60,4 +60,4 @@ This project was developed during my bachelor's thesis at the Technical Universi
 The paper of this project is registered for open review at Frontiers in Neuroscience. 
 
 ## Citation
-If this model or the corresponding paper is relevant to your work, please cite us at: 
+If this model or the corresponding paper is relevant to your work, please cite us. 
