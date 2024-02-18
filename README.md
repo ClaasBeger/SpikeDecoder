@@ -1,4 +1,4 @@
-# SpikeDecoder: Realizing GPT-style Natural Language Processing with Spiking Neural Networks
+# SpikeDecoder: Realizing the GPT Architecture with Spiking Neural Networks 
 
 Using the Spiking Self Attention mechanism first introduced in [Spikformer](https://github.com/ZK-Zhou/spikformer), we present a fully-spiking variant of the GPT decoder-only architecture. The model can be applied to language generation on character, as well as word embedding input.
 
